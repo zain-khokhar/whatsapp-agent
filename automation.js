@@ -1,8 +1,9 @@
 const { Client , LocalAuth } = require('whatsapp-web.js');
-const client = new Client({
-  authStrategy: new LocalAuth()
-});
 const  qrcode = require('qrcode-terminal');
+const client = new Client({
+  authStrategy: new LocalAuth(),
+  puppeteer: {headless:false}
+});
 
 client.on('qr', (qr) => {
     // Generate and scan this QR code with your phone to log in
