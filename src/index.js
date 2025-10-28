@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 const client = require('./config/whatsapp');
 const { handleMessage } = require('./handlers/fypHandler');
 

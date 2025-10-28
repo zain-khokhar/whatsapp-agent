@@ -1,60 +1,62 @@
+// Perplexity code ko Google Gemini Pro se replace kar diya gaya hai
 
-const fetch = require('node-fetch');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// Check karein ke API key environment variable mein set hai
+if (!process.env.GEMINI_API_KEY) {
+  console.error("Error: GEMINI_API_KEY environment variable set nahi hai.");
+  // Agar key nahi hai toh process ko rok dein
+  process.exit(1); 
+}
+
+// Gemini client ko initialize karein
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// System prompt jo aapne Perplexity mein use kiya tha
+const systemInstruction = "You are 'VU Helper,' an AI assistant for Virtual University of Pakistan students. Provide accurate, helpful, and concise answers about courses, assignments, exams, and academic queries. Always respond in the SAME LANGUAGE as the student's question (English, Urdu, or Roman Urdu).";
+
+// Model ko configuration ke sath tayyar karein
+const model = genAI.getGenerativeModel({ 
+  model: "gemini-2.5-flash",
+  systemInstruction: systemInstruction,
+  generationConfig: {
+    maxOutputTokens: 2000,
+    temperature: 0.2,
+    topP: 0.9,
+  }
+});
 
 /**
- * Get AI response from Perplexity API using the search endpoint (no model required)
- * Mirrors the client-side logic used in `index.html`.
+ * Get AI response from Google Gemini Pro
  * @param {string} userMessage - User's message
  * @returns {Promise<string>} AI response
  */
 async function getAIResponse(userMessage) {
   try {
-    const res = await fetch('https://api.perplexity.ai/search', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY || process.env.COMET_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        query: userMessage,
-        max_results: 1,
-        country: 'PK'
-      })
-    });
+    // Seedha user message bhej kar content generate karein
+    // System prompt aur config pehle se model par set hain
+    const result = await model.generateContent(userMessage);
+    const response = await result.response;
+    const text = response.text();
 
-    const data = await res.json();
+    return text.trim() || 'Sorry, I could not generate a response.';
 
-    if (!res.ok) {
-      console.error('❌ Perplexity API error:', data);
-      if (res.status === 429) return 'I am currently receiving too many requests. Please try again in a moment.';
-      return `Sorry, I encountered an error (${res.status}). Please try again.`;
+  } catch (error) {
+    console.error('❌ AI Service Error (Gemini):', error.message);
+    
+    // Gemini ke rate limit errors (Aam taur par message mein '429' ya 'RATE_LIMIT' hota hai)
+    if (error.message && (error.message.includes('429') || error.message.toUpperCase().includes('RATE_LIMIT'))) {
+      return 'I am currently receiving too many requests. Please try again in a moment.';
     }
-
-    // Prefer structured answer text
-    let answer = '';
-    if (data.answer) {
-      if (typeof data.answer === 'string') answer = data.answer;
-      else if (data.answer.text) answer = data.answer.text;
+    
+    // Doosre API errors
+    if (error.message) {
+      return `Sorry, I encountered an API error. Please try again.`;
     }
-
-    // Fallback to first result's snippet/summary/content
-    if (!answer && data.results && data.results.length > 0) {
-      const r = data.results[0];
-      answer = r.answer || r.snippet || r.summary || r.excerpt || r.content || '';
-      if (r.url) {
-        if (answer) answer += `\n\nSource: ${r.url}`;
-        else answer = `${r.title || 'Result'}\n${r.url}`;
-      }
-    }
-
-    if (!answer) return 'Sorry, I could not find an answer to your question.';
-
-    return answer.trim();
-  } catch (err) {
-    console.error('❌ AI Service Error:', err);
-    throw err;
+    
+    // Fallback error
+    return 'Sorry, an unknown error occurred while processing your request.';
   }
 }
 
 module.exports = { getAIResponse };
- 
