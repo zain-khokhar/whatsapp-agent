@@ -1,5 +1,5 @@
-// Track users who have already received welcome message
-const welcomedUsers = new Set();
+const { getAIResponse } = require('../services/aiServices');
+const { isValidQuestion, formatResponse } = require('../utils/helpers');
 
 /**
  * Handle incoming messages
@@ -10,24 +10,46 @@ async function handleMessage(msg) {
         // Get the contact who sent the message
         const contact = await msg.getContact();
         const chatId = msg.from;
+        const chat = await msg.getChat();
         
-        // Send welcome message to new users
-        if (!msg.fromMe && !welcomedUsers.has(chatId)) {
-            const welcomeMessage = `\n\nHello! Welcome! How can I help you?\n\nAI-powered assistant at your service.`;
-            await msg.reply(welcomeMessage);
-            
-            // Mark this user as welcomed
-            welcomedUsers.add(chatId);
-            console.log(`✅ Welcome message sent to: ${contact.pushname || chatId}`);
+        // Log incoming message
+        console.log(` Message from: ${contact.pushname || chatId}`);
+        console.log(` Chat: ${chat.name || 'Private'}`);
+        console.log(` Message: ${msg.body}`);
+        
+        // Handle messages from specific group/chat only
+        if (!msg.fromMe && msg.from === '923197542768@c.us') {
+            // Validate if it's a formal question
+            if (!isValidQuestion(msg)) {
+                console.log(' Invalid message format - skipping AI response');
+                return;
+            }
+
+            // Show typing indicator
+            await chat.sendStateTyping();
+
+            // Get AI response
+            try {
+                console.log(` Processing with AI...`);
+                const aiResponse = await getAIResponse(msg.body);
+                const formattedResponse = formatResponse(aiResponse);
+                
+                await msg.reply(formattedResponse);
+                console.log(` AI response sent successfully`);
+                console.log('─'.repeat(50));
+            } catch (error) {
+                console.error(' AI response failed:', error.message);
+                await msg.reply('Sorry, I am having trouble processing your request right now. Please try again in a moment.');
+            }
         }
         
-        // Handle commands
+        // Handle ping command for testing
         if (msg.body === '!ping') {
-            await msg.reply('pong');
+            await msg.reply(' Pong! Bot is active and running.');
         }
         
     } catch (error) {
-        console.error('❌ Error handling message:', error);
+        console.error(' Error handling message:', error);
     }
 }
 
