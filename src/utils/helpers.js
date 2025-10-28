@@ -18,7 +18,7 @@ function isValidQuestion(msg) {
   }
 
   // Check minimum length (at least 3 characters)
-  if (messageBody.length < 3) {
+  if (messageBody.length < 2) {
     return false;
   }
 
@@ -37,4 +37,18 @@ function isValidQuestion(msg) {
   return true;
 }
 
-module.exports = { isValidQuestion };
+/**
+ * Format AI response for WhatsApp
+ * @param {string} response - AI response
+ * @returns {string} Formatted response
+ */
+function formatResponse(response) {
+  if (!response || typeof response !== 'string') return '';
+  // Collapse excessive blank lines, trim
+  let out = response.replace(/\n{3,}/g, '\n\n').trim();
+  // Limit length to avoid very large messages (optional)
+  if (out.length > 4000) out = out.slice(0, 4000) + '\n\n[Answer truncated]';
+  return out;
+}
+
+module.exports = { isValidQuestion, formatResponse };

@@ -1,53 +1,60 @@
-const Perplexity = require('@perplexity-ai/perplexity_ai');
 
-const client = new Perplexity({
-  apiKey: process.env.COMET_API_KEY,
-});
+const fetch = require('node-fetch');
 
 /**
- * Get AI response from Perplexity API
+ * Get AI response from Perplexity API using the search endpoint (no model required)
+ * Mirrors the client-side logic used in `index.html`.
  * @param {string} userMessage - User's message
  * @returns {Promise<string>} AI response
  */
 async function getAIResponse(userMessage) {
   try {
-    const response = await client.chat.completions.create({
-      model: 'llama-3.1-sonar-small-128k-online',
-      messages: [
-        {
-          role: 'system',
-          content: "You are 'VU Helper,' an AI assistant for Virtual University of Pakistan students. Provide accurate, helpful, and concise answers about courses, assignments, exams, and academic queries. Always respond in the SAME LANGUAGE as the student's question (English, Urdu, or Roman Urdu)."
-        },
-        {
-          role: 'user',
-          content: userMessage
-        }
-      ],
-      max_tokens: 2000,
-      temperature: 0.2,
-      top_p: 0.9,
+    const res = await fetch('https://api.perplexity.ai/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY || process.env.COMET_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: userMessage,
+        max_results: 1,
+        country: 'PK'
+      })
     });
 
-    if (response.choices && response.choices.length > 0) {
-      return response.choices[0].message.content.trim() || 'Sorry, I could not generate a response.';
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error('❌ Perplexity API error:', data);
+      if (res.status === 429) return 'I am currently receiving too many requests. Please try again in a moment.';
+      return `Sorry, I encountered an error (${res.status}). Please try again.`;
     }
 
-    return 'Sorry, I could not find an answer to your question.';
-  } catch (error) {
-    console.error('❌ AI Service Error:', error);
-    
-    // Handle rate limit errors
-    if (error.status === 429) {
-      return 'I am currently receiving too many requests. Please try again in a moment.';
+    // Prefer structured answer text
+    let answer = '';
+    if (data.answer) {
+      if (typeof data.answer === 'string') answer = data.answer;
+      else if (data.answer.text) answer = data.answer.text;
     }
-    
-    // Handle other API errors
-    if (error.status) {
-      return `Sorry, I encountered an error (${error.status}). Please try again.`;
+
+    // Fallback to first result's snippet/summary/content
+    if (!answer && data.results && data.results.length > 0) {
+      const r = data.results[0];
+      answer = r.answer || r.snippet || r.summary || r.excerpt || r.content || '';
+      if (r.url) {
+        if (answer) answer += `\n\nSource: ${r.url}`;
+        else answer = `${r.title || 'Result'}\n${r.url}`;
+      }
     }
-    
-    throw error;
+
+    if (!answer) return 'Sorry, I could not find an answer to your question.';
+
+    return answer.trim();
+  } catch (err) {
+    console.error('❌ AI Service Error:', err);
+    throw err;
   }
 }
 
 module.exports = { getAIResponse };
+ 
