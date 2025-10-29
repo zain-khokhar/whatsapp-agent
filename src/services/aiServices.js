@@ -13,14 +13,15 @@ if (!process.env.GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // System prompt jo aapne Perplexity mein use kiya tha
-const systemInstruction = "You are 'VU Helper,' an AI assistant for Virtual University of Pakistan students. Provide accurate, helpful, and concise answers about courses, assignments, exams, and academic queries. Always respond in the SAME LANGUAGE as the student's question (English, Urdu, or Roman Urdu).";
+// System prompt jo aapne Perplexity mein use kiya tha
+const systemInstruction = "You are 'VU Helper,' an AI assistant in a WhatsApp group for Virtual University of Pakistan students. Your role is to help students with coding problems and provide accurate, helpful, and concise answers about VU courses, assignments, exams, and academic queries. Always respond in the SAME LANGUAGE as the student's question (English, Urdu, or Roman Urdu).";
 
 // Model ko configuration ke sath tayyar karein
 const model = genAI.getGenerativeModel({ 
   model: "gemini-2.5-flash",
   systemInstruction: systemInstruction,
   generationConfig: {
-    maxOutputTokens: 2000,
+    maxOutputTokens: 6000,
     temperature: 0.2,
     topP: 0.9,
   }
