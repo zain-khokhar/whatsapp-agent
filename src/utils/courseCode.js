@@ -7,6 +7,7 @@ const courseCodes = new Set([
     'mcm101', 'mcm301', 'mcm304', 'mcm310', 'mcm311', 'mcm401', 'mcm411', 'mcm431', 'mcm501', 'mcm511', 'mcm512', 'mcm514', 'mcm515', 'mcm516', 'mcm517', 'mcm520', 'mcm531', 'mcm532', 'mcm601', 'mcm604', 'mcm610', 'mcm611', 'mcm619', 'mcm499',
     'eco302', 'eco303', 'eco401', 'eco402', 'eco403', 'eco404', 'eco499', 'eco501', 'eco601', 'eco603', 'eco604', 'eco605', 'eco606', 'eco607', 'eco608', 'eco609', 'eco610', 'eco612', 'eco613', 'eco614', 'eco615', 'eco616', 'eco619', 'eco622',
      'eng001', 'eng101', 'eng201', 'eng301', 'eng401', 'eng498', 'eng499', 'eng501', 'eng502', 'eng503', 'eng504', 'eng505', 'eng506', 'eng507', 'eng508', 'eng509', 'eng510', 'eng511', 'eng512', 'eng513', 'eng514', 'eng515', 'eng516', 'eng517', 'eng518', 'eng519', 'eng520', 'eng521', 'eng522', 'eng523', 'eng524', 'eng527', 'eng529',
+     'acc101', 'acc311', 'acc501',
      
 
 
