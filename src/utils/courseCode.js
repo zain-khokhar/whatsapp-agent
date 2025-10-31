@@ -19,7 +19,8 @@ const courseCodes = new Set([
     'mgte630',
     'mcd401', 'mcd402', 'mcd403', 'mcd404', 'mcd501', 'mcd502', 'mcd503', 'mcd504',
     'hrm611', 'hrm613', 'hrm617', 'hrm619', 'hrm623', 'hrm624', 'hrm626', 'hrm627', 'hrm628', 'hrm630', 'hrm713',
-
+    'zoo101', 'zoo201', 'zoo301', 'zoo302', 'zoo501', 'zoo502', 'zoo503', 'zoo504', 'zoo505', 'zoo506', 'zoo507', 'zoo510',
+    
 
 
 ]);
