@@ -18,11 +18,6 @@ async function handleMessage(msg) {
         console.log(`Chat: ${chat.name || 'Private'}`);
         console.log(`Message: ${msg.body}`);
         
-        if (msg.body.startsWith('techo ')) {
-            const replyText = msg.body.slice(6);
-            await msg.reply(replyText);
-            return;
-        }
 
         // Check for course codes and send PDFs
         const lowerBody = msg.body.toLowerCase();
