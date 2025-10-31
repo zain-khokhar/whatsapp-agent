@@ -24,6 +24,7 @@ const courseCodes = new Set([
     'mkt501', 'mkt529', 'mkt530', 'mkt603', 'mkt610', 'mkt611', 'mkt621', 'mkt624', 'mkt730',
     'it430',
     'bio101', 'bio201', 'bio202', 'bio203', 'bio204', 'bio301', 'bio302', 'bio303', 'bio401', 'bio502', 'bio503', 'bio504', 'bio505', 'bio506', 'bio601', 'bio731', 'bio732', 'bio5101', 'bio5105',
+    'bnk601', 'bnk603', 'bnk604', 'bnk610', 'bnk613',
     
 
 
