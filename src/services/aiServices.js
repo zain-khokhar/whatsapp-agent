@@ -11,9 +11,8 @@ if (!process.env.GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 
-const normalSystemInstruction = "You are 'VU Helper,' an AI assistant in a WhatsApp group for Virtual University of Pakistan students. Your role is to help students with coding problems and provide accurate, helpful, and concise answers about VU courses, assignments, exams, and academic queries. Always respond in the SAME LANGUAGE as the student's question (English, Urdu, or Roman Urdu).";
 
-const reviewSystemInstruction = "You are a message reviewer for a WhatsApp bot. If a student's message is asking for a handout, notes, or PDF for a course, reply with ONLY the word 'handout'. If the message is an academic question, explanation request, or general query, reply with ONLY the word 'ai'. Reply with only one word: 'handout' or 'ai'. Do not explain your answer. Do not add anything else.";
+const systemInstruction = "You are 'VU Helper,' an AI assistant in a WhatsApp group for Virtual University of Pakistan students. Your role is to help students with coding problems and provide accurate, helpful, and concise answers about VU courses, assignments, exams, and academic queries. Always respond in the SAME LANGUAGE as the student's question (English, Urdu, or Roman Urdu).";
 
 /**
  * Get AI response from Google Gemini Pro
@@ -22,12 +21,8 @@ const reviewSystemInstruction = "You are a message reviewer for a WhatsApp bot. 
  * @returns {Promise<string>} AI response
  */
 
-async function getAIResponse(userMessage, mode) {
+async function getAIResponse(userMessage) {
   try {
-    let systemInstruction = normalSystemInstruction;
-    if (mode === 'review') {
-      systemInstruction = reviewSystemInstruction;
-    }
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       systemInstruction: systemInstruction,

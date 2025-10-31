@@ -7,36 +7,33 @@ const { isValidQuestion, formatResponse } = require('../utils/helpers');
  */
 async function handleMessage(msg) {
     try {
+        // Only process if message contains 'neuro' (case-insensitive)
+        if (!msg.body || !msg.body.toLowerCase().includes('neuro')) {
+            return;
+        }
         // Get the contact who sent the message
         const contact = await msg.getContact();
         const chatId = msg.from;
         const chat = await msg.getChat();
-        
         // Log incoming message
-       
-                console.log(` Message from: ${chatId}`);
+        console.log(` Message from: ${chatId}`);
         console.log(` Chat: ${chat.name || 'Private'}`);
         console.log(` Message: ${msg.body}`);
-        
-    
-        
+
         // Handle messages from specific group/chat only
-        if (!msg.fromMe && msg.from === '120363420568360131@g.us') {
+        if (!msg.fromMe && msg.from === '923197542768@c.us') {
             // Validate if it's a formal question
             if (!isValidQuestion(msg)) {
                 console.log(' Invalid message format - skipping AI response');
                 return;
             }
-
             // Show typing indicator
             await chat.sendStateTyping();
-
             // Get AI response
             try {
                 console.log(` Processing with AI...`);
                 const aiResponse = await getAIResponse(msg.body);
                 const formattedResponse = formatResponse(aiResponse);
-                
                 await msg.reply(formattedResponse);
                 console.log(` AI response sent successfully`);
                 console.log('─'.repeat(50));
@@ -45,12 +42,10 @@ async function handleMessage(msg) {
                 await msg.reply('Sorry, I am having trouble processing your request right now. Please try again in a moment.');
             }
         }
-        
         // Handle ping command for testing
         if (msg.body === '!ping') {
             await msg.reply(' Pong! Bot is active and running.');
         }
-        
     } catch (error) {
         console.error(' Error handling message:', error);
     }
