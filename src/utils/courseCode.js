@@ -13,6 +13,7 @@ const courseCodes = new Set([
     'eth101', 'eth201', 'eth202', 'eth301',
     'pak101', 'pak301', 'pak302', 'pak417',
     'soc101', 'soc301', 'soc302', 'soc401', 'soc402', 'soc403', 'soc404', 'soc601', 'soc602', 'soc603', 'soc607', 'soc608', 'soc609', 'soc612', 'soc614',
+    'psy101', 'psy201', 'psy301', 'psy401', 'psy402', 'psy403', 'psy404', 'psy405', 'psy406', 'psy408', 'psy409', 'psy502', 'psy504', 'psy516', 'psy601', 'psy610', 'psy619', 'psy631', 'psy632',
     
 
 
