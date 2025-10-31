@@ -10,6 +10,7 @@ const courseCodes = new Set([
     'acc101', 'acc311', 'acc501',
     'sta100', 'sta301', 'sta408', 'sta5102', 'sta620', 'sta621', 'sta630', 'sta631', 'sta632', 'sta641', 'sta642', 'sta643', 'sta644', 'sta730',
     'isl101', 'isl201', 'isl202', 'isl301',
+    'eth101', 'eth201', 'eth202', 'eth301',
     
 
 
