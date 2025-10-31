@@ -2,27 +2,29 @@ const fs = require('fs');
 const path = require('path');
 const { MessageMedia } = require('whatsapp-web.js');
 
-// --- New ---
 // List of all valid subject folder names from your image/list
 const subjectFolderNames = [
     "ACC", "BIO", "BIT", "BNK", "CS", "ECO", "EDU", "ENG", "ETH", "FIN", 
-    "GSC", "HRM", "ISL", "IT", "MATH", "MCD", "MCM", "MGMT", "MGT", 
+    "GCS", "HRM", "ISL", "IT", "MATH", "MCD", "MCM", "MGMT", "MGT", 
     "MKT", "PHY", "PSC", "SOC", "STA", "ZOO"
 ];
 // Create a Set of lowercase subject codes for fast, case-insensitive lookup
 const subjectCodes = new Set(subjectFolderNames.map(s => s.toLowerCase()));
-// --- End New ---
 
 
 /**
  * Handle incoming messages
  * @param {Object} msg - WhatsApp message object
+ * @returns {boolean} - Returns true if the message was handled, false otherwise
  */
 async function handleMessage(msg) {
-        // Only allow handouts for this specific chat ID
-        if (msg.from !== '923197542768@c.us') {
-            return;
-        }
+    // Only allow handouts for this specific chat ID
+    if (msg.from !== '923197542768@c.us') {
+        // Not the right chat, so we didn't "handle" it.
+        // Return false so other handlers (like AI) can process it.
+        return false; 
+    }
+
     try {
         // Get the contact who sent the message
         const contact = await msg.getContact();
@@ -30,34 +32,28 @@ async function handleMessage(msg) {
         const chat = await msg.getChat();
         
         // Log incoming message
-        console.log(`Message from: ${contact.pushname || chatId}`);
-        console.log(`Chat: ${chat.name || 'Private'}`);
-        console.log(`Message: ${msg.body}`);
+        console.log(`[PDF Handler] Message from: ${contact.pushname || chatId}`);
+        console.log(`[PDF Handler] Chat: ${chat.name || 'Private'}`);
+        console.log(`[PDF Handler] Message: ${msg.body}`);
         
-
         // --- Start: Advanced Search Logic ---
-
         const lowerBody = msg.body.toLowerCase();
-        // Normalized body: removes all spaces to catch "cs 101" and "cs101" the same way
-        const normalizedBody = lowerBody.replace(/\s+/g, ''); 
+        const normalizedBody = lowerBody.replace(/\s+/g, ''); // "cs 101" -> "cs101"
 
-        // Import course codes from utils (Set)
-        const courseCodes = require('../utils/courseCode'); // Your Set of 'cs101', 'mgt101', etc.
+        const courseCodes = require('../utils/courseCode');
 
         // --- Priority 1: Search for a specific COURSE code ---
         let foundCourseCode = null;
         for (const code of courseCodes) {
-            // Check if the space-less message body includes a valid course code
             if (normalizedBody.includes(code)) {
                 foundCourseCode = code;
-                break; // Found the most specific match, stop searching
+                break;
             }
         }
 
         if (foundCourseCode) {
             // --- Logic for when a specific course code (e.g., 'cs101') is found ---
             
-            // Derive folder name from code (e.g., 'mgt101' -> 'MGT', 'mth101' -> 'MATH')
             let subjectFolder;
             if (foundCourseCode.startsWith('mgmt')) {
                 subjectFolder = 'MGMT';
@@ -72,43 +68,43 @@ async function handleMessage(msg) {
             if (fs.existsSync(handoutsDir)) {
                 const files = fs.readdirSync(handoutsDir);
                 
-                // Find matching PDF (using your original, effective logic)
+                // --- Updated File Matching Logic ---
+                // This logic ignores spaces and symbols in filenames
                 const matchingFile = files.find(file => {
                     if (file.toLowerCase().endsWith('.pdf')) {
-                        // Checks if 'CS101-Handouts.pdf' (filePrefix 'cs101-') starts with 'cs101'
-                        const filePrefix = file.substring(0, 6).toLowerCase();
-                        return filePrefix.startsWith(foundCourseCode);
+                        // Normalize: 'MGT 501 - Handouts.pdf' -> 'mgt501handouts.pdf'
+                        const normalizedFileName = file.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        // Check if 'mgt501handouts.pdf' starts with 'mgt501'
+                        return normalizedFileName.startsWith(foundCourseCode);
                     }
                     return false;
                 });
+                // --- End Updated Logic ---
 
                 if (matchingFile) {
-                    // Found the file, send it
                     const filePath = path.join(handoutsDir, matchingFile);
                     const media = MessageMedia.fromFilePath(filePath);
-                    console.log(`Sending PDF: ${matchingFile} for course code: ${foundCourseCode}`);
+                    console.log(`[PDF Handler] Sending PDF: ${matchingFile} for code: ${foundCourseCode}`);
                     await msg.reply(media);
                     
-                    // Send additional message for CS304
                     if (foundCourseCode === 'cs304') {
                         await msg.reply('If you also want CS304 MCQs, here is the link: https://vu-project-delta.vercel.app/quiz/CS304_GRAND_QUIZ_MIDTERM\nRegards, Techo Bot');
                     }
+                    return true; // <-- We handled the message
                 } else {
-                    // Found folder, but no matching file
                     await msg.reply(`🤖 I found the *${subjectFolder}* folder, but I couldn't find a specific file for *${foundCourseCode}*. 😕`);
+                    return true; // <-- We handled the message (by replying)
                 }
             } else {
-                // Found course code, but no matching folder
                 await msg.reply(`🤖 I recognize the course *${foundCourseCode}*, but I couldn't find its subject folder ('${subjectFolder}').`);
+                return true; // <-- We handled the message (by replying)
             }
-
         } 
         // --- Priority 2: Search for a SUBJECT code (if no course code was found) ---
         else {
-            const words = lowerBody.split(/\W+/); // Split by non-word characters
+            const words = lowerBody.split(/\W+/);
             let foundSubjectCode = null;
             for (const word of words) {
-                // Check if the word is a valid subject code (e.g., 'cs', 'mgt')
                 if (subjectCodes.has(word)) {
                     foundSubjectCode = word.toUpperCase(); // e.g., 'CS'
                     break;
@@ -120,40 +116,41 @@ async function handleMessage(msg) {
                 const handoutsDir = path.join(__dirname, '..', 'handouts', foundSubjectCode);
                 if (fs.existsSync(handoutsDir)) {
                     const files = fs.readdirSync(handoutsDir)
-                        .filter(file => file.toLowerCase().endsWith('.pdf')); // Get only PDFs
+                        .filter(file => file.toLowerCase().endsWith('.pdf'));
 
                     if (files.length > 0) {
-                        // Build a helpful reply listing available files
                         let replyMsg = `🤖 I found ${files.length} handouts for *${foundSubjectCode}*.\n\nHere's what's available:\n`;
-                        
-                        // Limit list to 15 to avoid message spam
                         const filesToList = files.slice(0, 15);
                         replyMsg += filesToList.map(f => `• ${f.replace('.pdf', '')}`).join('\n');
                         
                         if (files.length > 15) {
                             replyMsg += `\n...and ${files.length - 15} more.`;
                         }
-
                         replyMsg += `\n\nTo get a file, please reply with the *full course code* (e.g., ${files[0].substring(0, 6)}).`;
                         await msg.reply(replyMsg);
+                        return true; // <-- We handled the message (by sending a list)
                     } else {
-                        // Found subject folder, but it's empty
                         await msg.reply(`I found the *${foundSubjectCode}* folder, but it seems to be empty. 🤷‍♂️`);
+                        return true; // <-- We handled the message (by replying)
                     }
                 }
-                // (No 'else' needed here, if the folder doesn't exist, we just don't reply)
+                // If subject folder doesn't exist, do nothing and fall through to 'return false'
             }
         }
         // --- End: Advanced Search Logic ---
 
-
-        // Handle ping command for testing (unchanged)
+        // Handle ping command for testing
         if (msg.body === '!ping') {
             await msg.reply('Pong! Bot is active and running.');
+            return true; // <-- We handled the message
         }
 
+        // If no code, no subject, and no ping was found, we did not handle this.
+        return false; 
+
     } catch (error) {
-        console.error('Error handling message:', error);
+        console.error('[PDF Handler] Error handling message:', error);
+        return false; // Return false on error
     }
 }
 

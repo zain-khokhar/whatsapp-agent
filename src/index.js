@@ -7,9 +7,14 @@ const { messageReviewer } = require('./messageViewer');
 // Register message handler
 
 client.on('message', async (msg) => {
-  await handlePdf(msg); // Pehle PDF check ho
+ const pdfHandled = await handlePdf(msg); // Pehle PDF check ho
   await handleFyp(msg); // Phir AI logic chale
-  await messageReviewer(msg, client);
+ if (!pdfHandled) {
+        await handleFyp(msg); 
+    }
+    
+    // Ye messageReviewer har haal mein chalega
+    await messageReviewer(msg, client);
 });
 
 // Initialize WhatsApp client
