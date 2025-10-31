@@ -18,7 +18,8 @@ const courseCodes = new Set([
     'edua305', 'edua402', 'edua403', 'edua405', 'edua406', 'edua430', 'edua501', 'edua510', 'edua516', 'edua519', 'edua601', 'edua602', 'edua630',
     'mgte630',
     'mcd401', 'mcd402', 'mcd403', 'mcd404', 'mcd501', 'mcd502', 'mcd503', 'mcd504',
-    
+    'hrm611', 'hrm613', 'hrm617', 'hrm619', 'hrm623', 'hrm624', 'hrm626', 'hrm627', 'hrm628', 'hrm630', 'hrm713',
+
 
 
 ]);
