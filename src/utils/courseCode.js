@@ -16,6 +16,7 @@ const courseCodes = new Set([
     'psy101', 'psy201', 'psy301', 'psy401', 'psy402', 'psy403', 'psy404', 'psy405', 'psy406', 'psy408', 'psy409', 'psy502', 'psy504', 'psy516', 'psy601', 'psy610', 'psy619', 'psy631', 'psy632',
     'ece101', 'ece201', 'ece202', 'ece203', 'ece301', 'ece302', 'ece303', 'ece401', 'ece402', 'ece403', 'ece501', 'ece601',
     'edua305', 'edua402', 'edua403', 'edua405', 'edua406', 'edua430', 'edua501', 'edua510', 'edua516', 'edua519', 'edua601', 'edua602', 'edua630',
+    'mgte630',
     
 
 
