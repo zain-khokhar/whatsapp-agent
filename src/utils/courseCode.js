@@ -5,20 +5,7 @@ const courseCodes = new Set([
     'mth001', 'mth100', 'mth101', 'mth102', 'mth104', 'mth201', 'mth202', 'mth301', 'mth302', 'mth303', 'mth401', 'mth501', 'mth5101', 'mth5102', 'mth5103', 'mth5204', 'mth5205', 'mth5206', 'mth5207', 'mth5208', 'mth5209', 'mth5210', 'mth5211', 'mth601', 'mth603', 'mth600a', 'mth600b', 'mth621', 'mth622', 'mth631', 'mth632', 'mth633', 'mth634', 'mth641', 'mth642', 'mth643', 'mth644', 'mth645', 'mth646', 'mth647', 'mth701', 'mth704', 'mth706', 'mth707', 'mth712', 'mth718', 'mth720', 'mth721',
     'edu101', 'edu201', 'edu301', 'edu302', 'edu303', 'edu304', 'edu305', 'edu401', 'edu402', 'edu403', 'edu405', 'edu406', 'edu407', 'edu410', 'edu411', 'edu430', 'edu431', 'edu433', 'edu501', 'edu510', 'edu512', 'edu515', 'edu516', 'edu601', 'edu602', 'edu604', 'edu630', 'edu654',
     'mcm101', 'mcm301', 'mcm304', 'mcm310', 'mcm311', 'mcm401', 'mcm411', 'mcm431', 'mcm501', 'mcm511', 'mcm512', 'mcm514', 'mcm515', 'mcm516', 'mcm517', 'mcm520', 'mcm531', 'mcm532', 'mcm601', 'mcm604', 'mcm610', 'mcm611', 'mcm619', 'mcm499',
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
+    'eco302', 'eco303', 'eco401', 'eco402', 'eco403', 'eco404', 'eco499', 'eco501', 'eco601', 'eco603', 'eco604', 'eco605', 'eco606', 'eco607', 'eco608', 'eco609', 'eco610', 'eco612', 'eco613', 'eco614', 'eco615', 'eco616', 'eco619', 'eco622',
 
 
 
