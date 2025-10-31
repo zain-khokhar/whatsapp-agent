@@ -9,6 +9,7 @@ const courseCodes = new Set([
     'eng001', 'eng101', 'eng201', 'eng301', 'eng401', 'eng498', 'eng499', 'eng501', 'eng502', 'eng503', 'eng504', 'eng505', 'eng506', 'eng507', 'eng508', 'eng509', 'eng510', 'eng511', 'eng512', 'eng513', 'eng514', 'eng515', 'eng516', 'eng517', 'eng518', 'eng519', 'eng520', 'eng521', 'eng522', 'eng523', 'eng524', 'eng527', 'eng529',
     'acc101', 'acc311', 'acc501',
     'sta100', 'sta301', 'sta408', 'sta5102', 'sta620', 'sta621', 'sta630', 'sta631', 'sta632', 'sta641', 'sta642', 'sta643', 'sta644', 'sta730',
+    'isl101', 'isl201', 'isl202', 'isl301',
     
 
 
