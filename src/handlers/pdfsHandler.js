@@ -6,7 +6,7 @@ const { MessageMedia } = require('whatsapp-web.js');
 // List of all valid subject folder names from your image/list
 const subjectFolderNames = [
     "ACC", "BIO", "BIT", "BNK", "CS", "ECO", "EDU", "ENG", "ETH", "FIN", 
-    "GCS", "HRM", "ISL", "IT", "MATH", "MCD", "MCM", "MGMT", "MGT", 
+    "GSC", "HRM", "ISL", "IT", "MATH", "MCD", "MCM", "MGMT", "MGT", 
     "MKT", "PHY", "PSC", "SOC", "STA", "ZOO"
 ];
 // Create a Set of lowercase subject codes for fast, case-insensitive lookup
@@ -19,6 +19,10 @@ const subjectCodes = new Set(subjectFolderNames.map(s => s.toLowerCase()));
  * @param {Object} msg - WhatsApp message object
  */
 async function handleMessage(msg) {
+        // Only allow handouts for this specific chat ID
+        if (msg.from !== '923197542768@c.us') {
+            return;
+        }
     try {
         // Get the contact who sent the message
         const contact = await msg.getContact();
