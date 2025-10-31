@@ -17,6 +17,7 @@ const courseCodes = new Set([
     'ece101', 'ece201', 'ece202', 'ece203', 'ece301', 'ece302', 'ece303', 'ece401', 'ece402', 'ece403', 'ece501', 'ece601',
     'edua305', 'edua402', 'edua403', 'edua405', 'edua406', 'edua430', 'edua501', 'edua510', 'edua516', 'edua519', 'edua601', 'edua602', 'edua630',
     'mgte630',
+    'mcd401', 'mcd402', 'mcd403', 'mcd404', 'mcd501', 'mcd502', 'mcd503', 'mcd504',
     
 
 
