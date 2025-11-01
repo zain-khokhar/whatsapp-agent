@@ -6,13 +6,6 @@ const { isValidQuestion, formatResponse } = require('../utils/helpers');
  * @param {Object} msg - WhatsApp message object
  */
 async function handleMessage(msg) {
-    const contact = await msg.getContact();
-        const chatId = msg.from;
-        const chat = await msg.getChat();
-           // Log incoming message
-        console.log(` Message from: ${chatId}`);
-        console.log(` Chat: ${chat.name || 'Private'}`);
-        console.log(` Message: ${msg.body}`);
     try {
         // Only process if message contains 'neuro' (case-insensitive)
         if (!msg.body || !msg.body.toLowerCase().includes('neuro')) {
