@@ -25,10 +25,8 @@ const client = new Client({
 client.on('qr', (qr) => {
     console.log('📱 QR Code received!');
     console.log('═'.repeat(60));
-    console.log('\n🔗 Scan using this URL:');
-    console.log(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`);
-    console.log('\n📱 Or scan the QR below:');
-    qrcode.generate(qr, { small: true });
+    console.log('🔗 Open this URL in browser to scan:');
+    console.log(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qr)}`);
     console.log('═'.repeat(60));
     console.log('💡 Open WhatsApp > Linked Devices > Link a Device');
 });
