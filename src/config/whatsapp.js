@@ -23,10 +23,13 @@ const client = new Client({
 
 // Client event handlers
 client.on('qr', (qr) => {
-    console.log('📱 QR Code received! Scan this with your WhatsApp:');
-    console.log('═'.repeat(50));
-    qrcode.generate(qr, { small: true, scale: 1 });
-    console.log('═'.repeat(50));
+    console.log('📱 QR Code received!');
+    console.log('═'.repeat(60));
+    console.log('\n🔗 Scan using this URL:');
+    console.log(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`);
+    console.log('\n📱 Or scan the QR below:');
+    qrcode.generate(qr, { small: true });
+    console.log('═'.repeat(60));
     console.log('💡 Open WhatsApp > Linked Devices > Link a Device');
 });
 
