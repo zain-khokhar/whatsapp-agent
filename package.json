@@ -1,6 +1,13 @@
 {
+  "name": "whatsapp-agent",
+  "version": "1.0.0",
+  "description": "WhatsApp bot for VU handouts and AI assistance",
+  "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@google/genai": "^1.27.0",
