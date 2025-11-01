@@ -19,7 +19,7 @@ const subjectCodes = new Set(subjectFolderNames.map(s => s.toLowerCase()));
  */
 async function handleMessage(msg) {
     // Only allow handouts for this specific chat ID
-    if (msg.from !== '120363420568360131@g.us' && msg.from !==' 120363422289030389@g.us' ) {
+    if (msg.from !== '120363420568360131@g.us' && msg.from !== '120363422289030389@g.us') {
         // Not the right chat, so we didn't "handle" it.
         // Return false so other handlers (like AI) can process it.
         return false; 
@@ -135,10 +135,6 @@ async function handleMessage(msg) {
                     const media = MessageMedia.fromFilePath(filePath);
                     console.log(`[PDF Handler] Sending PDF: ${matchingFile} for code: ${foundCourseCode}`);
                     await msg.reply(media);
-                    
-                    if (foundCourseCode === 'cs304') {
-                        await msg.reply('If you also want CS304 MCQs, here is the link: https://vu-project-delta.vercel.app/quiz/CS304_GRAND_QUIZ_MIDTERM\nRegards, Techo Bot');
-                    }
                     return true; // <-- We handled the message
                 } else {
                     await msg.reply(`🤖 I found the *${subjectFolder}* folder, but I couldn't find a specific file for *${foundCourseCode.toUpperCase()}*. 😕`);
