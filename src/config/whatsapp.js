@@ -25,7 +25,7 @@ const client = new Client({
 client.on('qr', (qr) => {
     console.log('📱 QR Code received! Scan this with your WhatsApp:');
     console.log('═'.repeat(50));
-    qrcode.generate(qr, { small: true });
+    qrcode.generate(qr, { small: true, scale: 1 });
     console.log('═'.repeat(50));
     console.log('💡 Open WhatsApp > Linked Devices > Link a Device');
 });
