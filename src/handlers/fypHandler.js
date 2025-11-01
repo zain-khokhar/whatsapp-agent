@@ -6,6 +6,13 @@ const { isValidQuestion, formatResponse } = require('../utils/helpers');
  * @param {Object} msg - WhatsApp message object
  */
 async function handleMessage(msg) {
+    const contact = await msg.getContact();
+        const chatId = msg.from;
+        const chat = await msg.getChat();
+           // Log incoming message
+        console.log(` Message from: ${chatId}`);
+        console.log(` Chat: ${chat.name || 'Private'}`);
+        console.log(` Message: ${msg.body}`);
     try {
         // Only process if message contains 'neuro' (case-insensitive)
         if (!msg.body || !msg.body.toLowerCase().includes('neuro')) {
@@ -21,7 +28,7 @@ async function handleMessage(msg) {
         console.log(` Message: ${msg.body}`);
 
         // Handle messages from specific group/chat only
-        if (!msg.fromMe && msg.from === '923197542768@c.us') {
+        if (!msg.fromMe && msg.from === '120363420568360131@g.us' && msg.from === ' 120363422289030389@g.us') {
             // Validate if it's a formal question
             if (!isValidQuestion(msg)) {
                 console.log(' Invalid message format - skipping AI response');
