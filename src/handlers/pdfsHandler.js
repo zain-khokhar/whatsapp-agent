@@ -59,6 +59,52 @@ async function handleMessage(msg) {
                 subjectFolder = 'MGMT';
             } else if (foundCourseCode.startsWith('mth')) {
                 subjectFolder = 'MATH';
+            } else if (foundCourseCode.startsWith('mgt')) {
+                subjectFolder = 'MGT';
+            } else if (foundCourseCode.startsWith('eco')) {
+                subjectFolder = 'ECO';
+            } else if (foundCourseCode.startsWith('eng')) {
+                subjectFolder = 'ENG';
+            } else if (foundCourseCode.startsWith('acc')) {
+                subjectFolder = 'ACC';
+            } else if (foundCourseCode.startsWith('sta')) {
+                subjectFolder = 'STA';
+            } else if (foundCourseCode.startsWith('isl')) {
+                subjectFolder = 'ISL';
+            } else if (foundCourseCode.startsWith('eth')) {
+                subjectFolder = 'ETH';
+            } else if (foundCourseCode.startsWith('pak')) {
+                subjectFolder = 'PAK';
+            } else if (foundCourseCode.startsWith('soc')) {
+                subjectFolder = 'SOC';
+            } else if (foundCourseCode.startsWith('psy')) {
+                subjectFolder = 'PSY';
+            } else if (foundCourseCode.startsWith('ece')) {
+                subjectFolder = 'ECE';
+            } else if (foundCourseCode.startsWith('edu')) {
+                subjectFolder = 'EDU';
+            } else if (foundCourseCode.startsWith('mcd')) {
+                subjectFolder = 'MCD';
+            } else if (foundCourseCode.startsWith('hrm')) {
+                subjectFolder = 'HRM';
+            } else if (foundCourseCode.startsWith('zoo')) {
+                subjectFolder = 'ZOO';
+            } else if (foundCourseCode.startsWith('mkt')) {
+                subjectFolder = 'MKT';
+            } else if (foundCourseCode.startsWith('bio')) {
+                subjectFolder = 'BIO';
+            } else if (foundCourseCode.startsWith('bnk')) {
+                subjectFolder = 'BNK';
+            } else if (foundCourseCode.startsWith('fin')) {
+                subjectFolder = 'FIN';
+            } else if (foundCourseCode.startsWith('gsc')) {
+                subjectFolder = 'GSC';
+            } else if (foundCourseCode.startsWith('mcm')) {
+                subjectFolder = 'MCM';
+            } else if (foundCourseCode.startsWith('it')) {
+                subjectFolder = 'IT';
+            } else if (foundCourseCode.startsWith('cs')) {
+                subjectFolder = 'CS';
             } else {
                 subjectFolder = foundCourseCode.substring(0, 3).toUpperCase();
             }
@@ -69,12 +115,15 @@ async function handleMessage(msg) {
                 const files = fs.readdirSync(handoutsDir);
                 
                 // --- Updated File Matching Logic ---
-                // This logic ignores spaces and symbols in filenames
+                // Match files based on the course code (case-insensitive)
                 const matchingFile = files.find(file => {
                     if (file.toLowerCase().endsWith('.pdf')) {
-                        // Normalize: 'MGT 501 - Handouts.pdf' -> 'mgt501handouts.pdf'
-                        const normalizedFileName = file.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        // Check if 'mgt501handouts.pdf' starts with 'mgt501'
+                        // Extract the course code from filename: "CS101 handouts.pdf" -> "cs101"
+                        const fileNameLower = file.toLowerCase();
+                        const normalizedFileName = fileNameLower.replace(/[^a-z0-9]/g, '');
+                        
+                        // Check if normalized filename starts with the course code
+                        // e.g., "cs101handoutspdf" starts with "cs101"
                         return normalizedFileName.startsWith(foundCourseCode);
                     }
                     return false;
@@ -92,11 +141,11 @@ async function handleMessage(msg) {
                     }
                     return true; // <-- We handled the message
                 } else {
-                    await msg.reply(`🤖 I found the *${subjectFolder}* folder, but I couldn't find a specific file for *${foundCourseCode}*. 😕`);
+                    await msg.reply(`🤖 I found the *${subjectFolder}* folder, but I couldn't find a specific file for *${foundCourseCode.toUpperCase()}*. 😕`);
                     return true; // <-- We handled the message (by replying)
                 }
             } else {
-                await msg.reply(`🤖 I recognize the course *${foundCourseCode}*, but I couldn't find its subject folder ('${subjectFolder}').`);
+                await msg.reply(`🤖 I recognize the course *${foundCourseCode.toUpperCase()}*, but I couldn't find its subject folder ('${subjectFolder}').`);
                 return true; // <-- We handled the message (by replying)
             }
         } 
