@@ -2,19 +2,16 @@ require('dotenv').config();
 const client = require('./config/whatsapp');
 const { handleMessage: handleFyp } = require('./handlers/fypHandler');
 const { handleMessage: handlePdf } = require('./handlers/pdfsHandler');
-const { messageReviewer } = require('./messageViewer');
 
 // Register message handler
 
 client.on('message', async (msg) => {
- const pdfHandled = await handlePdf(msg); // Pehle PDF check ho
-  await handleFyp(msg); // Phir AI logic chale
- if (!pdfHandled) {
+    const pdfHandled = await handlePdf(msg); // First check PDF handler
+    
+    // Only call AI handler if PDF handler didn't handle the message
+    if (!pdfHandled) {
         await handleFyp(msg); 
     }
-    
-    // Ye messageReviewer har haal mein chalega
-    await messageReviewer(msg, client);
 });
 
 // Initialize WhatsApp client
