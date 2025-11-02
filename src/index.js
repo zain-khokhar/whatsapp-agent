@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const client = require('./config/whatsapp');
 const { handleMessage: handleFyp } = require('./handlers/fypHandler');
-const { handleMessage: handlePdf } = require('./handlers/pdfsHandler');
 
 console.log('🚀 WhatsApp Agent starting...');
 console.log('📍 Environment:', process.env.NODE_ENV || 'development');
@@ -39,12 +38,7 @@ app.listen(PORT, () => {
 // Register message handler with error handling
 client.on('message', async (msg) => {
     try {
-        const pdfHandled = await handlePdf(msg); // First check PDF handler
-        
-        // Only call AI handler if PDF handler didn't handle the message
-        if (!pdfHandled) {
-            await handleFyp(msg); 
-        }
+        await handleFyp(msg);
     } catch (error) {
         console.error('❌ Error handling message:', error.message);
         console.error('Stack:', error.stack);
