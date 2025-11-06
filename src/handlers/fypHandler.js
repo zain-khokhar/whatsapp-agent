@@ -29,7 +29,7 @@ async function handleMessage(msg) {
         console.log(` Message: ${msg.body}`);
 
         // Handle messages from specific group/chat only
-        if (!msg.fromMe && (msg.from === '120363420568360131@g.us' || msg.from === '120363399142279900@g.us' )) {
+        if ( (msg.from === '120363420568360131@g.us' || msg.from === '120363422289030389@g.us' ||  msg.from === '120363417753851405@g.us' || msg.from === '120363403523473382@g.us')) {
             // Validate if it's a formal question
             if (!isValidQuestion(msg)) {
                 console.log(' Invalid message format - skipping AI response');
