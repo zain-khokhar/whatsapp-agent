@@ -7,16 +7,17 @@ const client = new Client({
         dataPath: './.wwebjs_auth'
     }),
     puppeteer: { 
-        headless: true,
+        headless: 'new',
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
-            '--no-first-run',
-            '--no-zygote',
             '--disable-web-security',
-            '--disable-features=VizDisplayCompositor'
+            '--disable-extensions',
+            '--no-first-run',
+            '--disable-default-apps',
+            '--disable-sync'
         ]
     }
 });
