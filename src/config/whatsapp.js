@@ -12,19 +12,11 @@ const client = new Client({
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
+            '--disable-gpu',
             '--no-first-run',
             '--no-zygote',
-            '--single-process',
-            '--disable-gpu',
             '--disable-web-security',
-            '--disable-features=VizDisplayCompositor',
-            '--run-all-compositor-stages-before-draw',
-            '--disable-background-timer-throttling',
-            '--disable-renderer-backgrounding',
-            '--disable-backgrounding-occluded-windows',
-            '--disable-ipc-flooding-protection',
-            '--virtual-time-budget=5000'
+            '--disable-features=VizDisplayCompositor'
         ]
     }
 });
