@@ -24,7 +24,7 @@ const systemInstruction = "You are 'Zeno,' an AI assistant in a WhatsApp group f
 async function getAIResponse(userMessage) {
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       systemInstruction: systemInstruction,
       generationConfig: {
         maxOutputTokens: 6000,
