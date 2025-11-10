@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const client = require('./config/whatsapp');
 const { handleMessage: handleFyp } = require('./handlers/fypHandler');
+const { handleMessage: handlePdfs } = require('./handlers/pdfsHandler');
 
 console.log('🚀 WhatsApp Agent starting...');
 console.log('📍 Environment:', process.env.NODE_ENV || 'development');
@@ -38,7 +39,13 @@ app.listen(PORT, () => {
 // Register message handler with error handling
 client.on('message', async (msg) => {
     try {
-        await handleFyp(msg);
+        // First try PDF handler
+        const handledByPdf = await handlePdfs(msg);
+        
+        // If PDF handler didn't handle it, try FYP handler
+        if (!handledByPdf) {
+            await handleFyp(msg);
+        }
     } catch (error) {
         console.error('❌ Error handling message:', error.message);
         console.error('Stack:', error.stack);
