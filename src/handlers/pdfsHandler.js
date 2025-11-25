@@ -2,14 +2,37 @@ const fs = require('fs');
 const path = require('path');
 const { MessageMedia } = require('whatsapp-web.js');
 
-// List of all valid subject folder names from your image/list
+// List of all valid subject folder names (updated to match 'vu-projects-<SUBJECT>-pdfs')
 const subjectFolderNames = [
-    "ACC", "BIO", "BIT", "BNK", "CS", "ECO", "EDU", "ENG", "ETH", "FIN", 
-    "GCS", "HRM", "ISL", "IT", "MATH", "MCD", "MCM", "MGMT", "MGT", 
-    "MKT", "PHY", "PSC", "SOC", "STA", "ZOO"
+    "ACC", "BIF", "BIO", "BIT", "BNK", "BT", "CHE", "CS", "ECO", "EDU", "ENG", "ETH", "FIN",
+    "GSC", "HRM", "ISL", "IT", "MTH", "MCD", "MCM", "MGMT", "MGT", "MKT", "PAD", "PAK",
+    "PHY", "PSC", "SOC", "STA", "URD", "ZOO"
 ];
 // Create a Set of lowercase subject codes for fast, case-insensitive lookup
 const subjectCodes = new Set(subjectFolderNames.map(s => s.toLowerCase()));
+
+// Persistent history file for tracking which handout was sent to which chat and when
+const HISTORY_DIR = path.join(__dirname, '..', 'data');
+const HISTORY_FILE = path.join(HISTORY_DIR, 'handoutHistory.json');
+// In-memory cache of history for faster checks
+let sendHistory = {};
+try {
+    if (!fs.existsSync(HISTORY_DIR)) fs.mkdirSync(HISTORY_DIR, { recursive: true });
+    if (fs.existsSync(HISTORY_FILE)) {
+        sendHistory = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8') || '{}');
+    }
+} catch (err) {
+    console.warn('[PDF Handler] Could not load send history:', err && err.message);
+    sendHistory = {};
+}
+
+function saveHistory() {
+    try {
+        fs.writeFileSync(HISTORY_FILE, JSON.stringify(sendHistory, null, 2), 'utf8');
+    } catch (err) {
+        console.warn('[PDF Handler] Failed to save send history:', err && err.message);
+    }
+}
 
 
 /**
@@ -18,23 +41,15 @@ const subjectCodes = new Set(subjectFolderNames.map(s => s.toLowerCase()));
  * @returns {boolean} - Returns true if the message was handled, false otherwise
  */
 async function handleMessage(msg) {
-    // Only allow handouts for this specific chat ID
-    if (msg.from !== '120363420568360131@g.us' && msg.from !== '120363422289030389@g.us') {
-        // Not the right chat, so we didn't "handle" it.
-        // Return false so other handlers (like AI) can process it.
-        return false; 
-    }
+    // Previously this handler restricted access to two specific group IDs.
+    // The restriction has been removed so handouts can be requested from any group or chat.
 
     try {
-        // Get the contact who sent the message
-        const contact = await msg.getContact();
         const chatId = msg.from;
         const chat = await msg.getChat();
         
-        // Log incoming message
-        console.log(`[PDF Handler] Message from: ${contact.pushname || chatId}`);
-        console.log(`[PDF Handler] Chat: ${chat.name || 'Private'}`);
-        console.log(`[PDF Handler] Message: ${msg.body}`);
+        // Get contact name from message author or chat name (avoiding deprecated getContact API)
+        const contactName = msg._data?.notifyName || chat.name || chatId;
         
         // --- Start: Advanced Search Logic ---
         const lowerBody = msg.body.toLowerCase();
@@ -54,64 +69,29 @@ async function handleMessage(msg) {
         if (foundCourseCode) {
             // --- Logic for when a specific course code (e.g., 'cs101') is found ---
             
-            let subjectFolder;
-            if (foundCourseCode.startsWith('mgmt')) {
-                subjectFolder = 'MGMT';
-            } else if (foundCourseCode.startsWith('mth')) {
-                subjectFolder = 'MATH';
-            } else if (foundCourseCode.startsWith('mgt')) {
-                subjectFolder = 'MGT';
-            } else if (foundCourseCode.startsWith('eco')) {
-                subjectFolder = 'ECO';
-            } else if (foundCourseCode.startsWith('eng')) {
-                subjectFolder = 'ENG';
-            } else if (foundCourseCode.startsWith('acc')) {
-                subjectFolder = 'ACC';
-            } else if (foundCourseCode.startsWith('sta')) {
-                subjectFolder = 'STA';
-            } else if (foundCourseCode.startsWith('isl')) {
-                subjectFolder = 'ISL';
-            } else if (foundCourseCode.startsWith('eth')) {
-                subjectFolder = 'ETH';
-            } else if (foundCourseCode.startsWith('pak')) {
-                subjectFolder = 'PAK';
-            } else if (foundCourseCode.startsWith('soc')) {
-                subjectFolder = 'SOC';
-            } else if (foundCourseCode.startsWith('psy')) {
-                subjectFolder = 'PSY';
-            } else if (foundCourseCode.startsWith('ece')) {
-                subjectFolder = 'ECE';
-            } else if (foundCourseCode.startsWith('edu')) {
-                subjectFolder = 'EDU';
-            } else if (foundCourseCode.startsWith('mcd')) {
-                subjectFolder = 'MCD';
-            } else if (foundCourseCode.startsWith('hrm')) {
-                subjectFolder = 'HRM';
-            } else if (foundCourseCode.startsWith('zoo')) {
-                subjectFolder = 'ZOO';
-            } else if (foundCourseCode.startsWith('mkt')) {
-                subjectFolder = 'MKT';
-            } else if (foundCourseCode.startsWith('bio')) {
-                subjectFolder = 'BIO';
-            } else if (foundCourseCode.startsWith('bnk')) {
-                subjectFolder = 'BNK';
-            } else if (foundCourseCode.startsWith('fin')) {
-                subjectFolder = 'FIN';
-            } else if (foundCourseCode.startsWith('gsc')) {
-                subjectFolder = 'GSC';
-            } else if (foundCourseCode.startsWith('mcm')) {
-                subjectFolder = 'MCM';
-            } else if (foundCourseCode.startsWith('it')) {
-                subjectFolder = 'IT';
-            } else if (foundCourseCode.startsWith('cs')) {
-                subjectFolder = 'CS';
-            } else {
-                subjectFolder = foundCourseCode.substring(0, 3).toUpperCase();
-            }
-
-            const handoutsDir = path.join(__dirname, '..', 'handouts', subjectFolder);
+            // Log only relevant handout request messages
+            console.log(`[PDF Handler] Handout request from: ${contactName}`);
+            console.log(`[PDF Handler] Chat: ${chat.name || 'Private'}`);
+            console.log(`[PDF Handler] Message: ${msg.body}`);
+            console.log(`[PDF Handler] Course code detected: ${foundCourseCode}`);
             
-            if (fs.existsSync(handoutsDir)) {
+            // Derive subject code from the start of the course code (letters only)
+            let subjectFolder = foundCourseCode.match(/^[a-z]+/i);
+            subjectFolder = subjectFolder ? subjectFolder[0].toUpperCase() : foundCourseCode.substring(0, 3).toUpperCase();
+
+            // New folder structure is like 'vu-projects-<SUBJECT>-pdfs'
+            const handoutsBase = path.join(__dirname, '..', 'handouts');
+            let handoutsDir = null;
+            try {
+                const folders = fs.readdirSync(handoutsBase).filter(name => fs.statSync(path.join(handoutsBase, name)).isDirectory());
+                const match = folders.find(f => f.toLowerCase() === `vu-projects-${subjectFolder.toLowerCase()}-pdfs`);
+                if (match) handoutsDir = path.join(handoutsBase, match);
+            } catch (err) {
+                // If reading directory fails, leave handoutsDir null
+                handoutsDir = null;
+            }
+            
+            if (handoutsDir && fs.existsSync(handoutsDir)) {
                 const files = fs.readdirSync(handoutsDir);
                 
                 // --- Updated File Matching Logic ---
@@ -131,18 +111,34 @@ async function handleMessage(msg) {
                 // --- End Updated Logic ---
 
                 if (matchingFile) {
+                    // Rate-limit: same handout should only be sent to the same chat once per hour.
+                    const chatKey = msg.from; // group or chat id
+                    const fileKey = matchingFile; // using filename as identifier
+                    const now = Date.now();
+                    const ONE_HOUR_MS = 60 * 60 * 1000;
+
+                    // Ensure nested structure exists
+                    if (!sendHistory[chatKey]) sendHistory[chatKey] = {};
+                    const lastSent = sendHistory[chatKey][fileKey] || 0;
+
+                    if (lastSent && (now - lastSent) < ONE_HOUR_MS) {
+                        // Too soon — less than an hour, silently skip sending
+                        console.log(`[PDF Handler] Skipping send of ${matchingFile} to ${chatKey} — sent ${Math.round((now - lastSent) / 60000)} minutes ago.`);
+                        return true; // still considered handled
+                    }
+
+                    // If it has been >= ONE_HOUR_MS or never sent before, send the handout
                     const filePath = path.join(handoutsDir, matchingFile);
                     const media = MessageMedia.fromFilePath(filePath);
-                    console.log(`[PDF Handler] Sending PDF: ${matchingFile} for code: ${foundCourseCode}`);
-                    await msg.reply(media);
+                    console.log(`[PDF Handler] Sending PDF: ${matchingFile} for code: ${foundCourseCode} to ${chatKey}`);
+                    await msg.reply(media, undefined, { caption: 'Handout sent by AI Agent' });
+
+                    // Update history and persist
+                    sendHistory[chatKey][fileKey] = now;
+                    saveHistory();
+
                     return true; // <-- We handled the message
-                } else {
-                    await msg.reply(`🤖 I found the *${subjectFolder}* folder, but I couldn't find a specific file for *${foundCourseCode.toUpperCase()}*. 😕`);
-                    return true; // <-- We handled the message (by replying)
                 }
-            } else {
-                await msg.reply(`🤖 I recognize the course *${foundCourseCode.toUpperCase()}*, but I couldn't find its subject folder ('${subjectFolder}').`);
-                return true; // <-- We handled the message (by replying)
             }
         } 
         // --- Priority 2: Search for a SUBJECT code (if no course code was found) ---
@@ -158,8 +154,24 @@ async function handleMessage(msg) {
 
             if (foundSubjectCode) {
                 // --- Logic for when only a subject (e.g., 'CS') is found ---
-                const handoutsDir = path.join(__dirname, '..', 'handouts', foundSubjectCode);
-                if (fs.existsSync(handoutsDir)) {
+                
+                // Log only relevant handout request messages
+                console.log(`[PDF Handler] Subject request from: ${contactName}`);
+                console.log(`[PDF Handler] Chat: ${chat.name || 'Private'}`);
+                console.log(`[PDF Handler] Message: ${msg.body}`);
+                console.log(`[PDF Handler] Subject code detected: ${foundSubjectCode}`);
+                
+                const handoutsBase = path.join(__dirname, '..', 'handouts');
+                let handoutsDir = null;
+                try {
+                    const folders = fs.readdirSync(handoutsBase).filter(name => fs.statSync(path.join(handoutsBase, name)).isDirectory());
+                    const match = folders.find(f => f.toLowerCase() === `vu-projects-${foundSubjectCode.toLowerCase()}-pdfs`);
+                    if (match) handoutsDir = path.join(handoutsBase, match);
+                } catch (err) {
+                    handoutsDir = null;
+                }
+
+                if (handoutsDir && fs.existsSync(handoutsDir)) {
                     const files = fs.readdirSync(handoutsDir)
                         .filter(file => file.toLowerCase().endsWith('.pdf'));
 
