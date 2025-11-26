@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const client = require('./config/whatsapp');
 const { handleMessage: handleFyp } = require('./handlers/fypHandler');
-const { handleMessage: handlePdfs } = require('./handlers/pdfsHandler');
+const { handleMessage: handlePdfs, initAutoSend } = require('./handlers/pdfsHandler');
 
 console.log('🚀 WhatsApp Agent starting...');
 console.log('📍 Environment:', process.env.NODE_ENV || 'development');
@@ -55,6 +55,17 @@ client.on('message', async (msg) => {
 // Update ready status
 client.on('ready', () => {
     isClientReady = true;
+    // Start the scheduler that will automatically send handouts based on persisted history
+    try {
+        const enableAutoSend = process.env.ENABLE_AUTO_SEND !== 'false';
+        if (enableAutoSend) {
+            initAutoSend(client, { intervalMs: (process.env.AUTO_SEND_INTERVAL_MS ? parseInt(process.env.AUTO_SEND_INTERVAL_MS, 10) : 60 * 1000) }); // default 60s
+        } else {
+            console.log('ℹ️  Auto-send scheduler disabled (ENABLE_AUTO_SEND=false)');
+        }
+    } catch (err) {
+        console.error('❌ Failed to initialize auto-send scheduler:', err && err.message);
+    }
 });
 
 client.on('disconnected', () => {

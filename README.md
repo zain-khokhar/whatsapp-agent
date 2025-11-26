@@ -59,3 +59,19 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 **Keywords:** WhatsApp automation, WhatsApp API, chatbot, customer support, messaging, Node.js
+
+## Scheduler for Recurring Handouts
+
+This project includes a built-in scheduler that automatically resends handouts to chats (groups or users) on a configurable interval.
+
+- The last-sent timestamp is stored in `src/data/handoutHistory.json` so it persists across restarts (no database required).
+- The scheduler checks the persisted history and sends a handout again if at least 1 hour has passed since the previous send.
+- The stored timestamps include an ISO timestamp and a localized string with AM/PM for human readability.
+- The scheduler starts automatically when the WhatsApp client becomes ready; you can adjust the poll interval in `src/index.js` where `initAutoSend` is called.
+
+This makes scheduled handout delivery resilient: the timer is based on real world time (not server uptime), so messages are sent exactly one hour after the previous send even if the server restarts in the interim.
+
+Environment variables:
+
+- `ENABLE_AUTO_SEND=false` to disable scheduled sends.
+- `AUTO_SEND_INTERVAL_MS=<milliseconds>` to set the scheduler polling interval (default 60000 ms = 1 minute).
