@@ -7,7 +7,7 @@ const client = new Client({
         dataPath: './.wwebjs_auth'
     }),
     puppeteer: { 
-        headless: 'new',
+        headless: false,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',

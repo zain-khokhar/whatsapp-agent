@@ -39,15 +39,28 @@ app.listen(PORT, () => {
 // Register message handler with error handling
 client.on('message', async (msg) => {
     try {
+        // Print group or chat name and id
+        // const chat = await msg.getChat();
+        // const name = chat.name || chat.formattedTitle || chat.id._serialized;
+        // const id = chat.id._serialized;
+        // console.log(`[MSG RECEIVED] Chat Name: ${name} | Chat ID: ${id}`);
+
+        // // Only allow PDF and AI chat features for this group
+        // const ALLOWED_GROUP_ID = '120363402134871151@g.us';
+        // if (id !== ALLOWED_GROUP_ID) {
+        //     // Ignore all PDF and AI chat features for other groups/chats
+        //     return;
+        // }
+
         // Check if message contains 'zeno' - if so, handle with AI only
         if (msg.body && msg.body.toLowerCase().includes('zeno')) {
             await handleFyp(msg, client);
             return; // Skip PDF handler for AI requests
         }
-        
-        // Otherwise, try PDF handler
+
+        // PDF sending is enabled for the allowed group
         await handlePdfs(msg);
-        
+
     } catch (error) {
         console.error('❌ Error handling message:', error.message);
         console.error('Stack:', error.stack);
