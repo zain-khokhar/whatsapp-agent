@@ -50,6 +50,16 @@ async function handleAdminCommand(msg, chat) {
             return true; // Silently ignore non-admin commands
         }
         
+        // Check if bot itself is admin (required for kicking)
+        const botId = chat.client.info.wid._serialized;
+        console.log(`[Admin Utils] Bot ID: ${botId}`);
+        const isBotAdmin = await isUserAdmin(chat, botId);
+        console.log(`[Admin Utils] Bot admin status: ${isBotAdmin}`);
+        if (!isBotAdmin) {
+            console.log(`[Admin Utils] Bot is not admin in this group, cannot execute admin commands`);
+            return true; // Silently ignore - bot needs to be admin
+        }
+        
         // Handle !all command - Mention all members
         if (command.startsWith('!all')) {
             return await handleAllCommand(msg, chat);
@@ -99,39 +109,80 @@ async function handleAllCommand(msg, chat) {
  * @returns {Promise<boolean>} - True if handled
  */
 async function handleKickCommand(msg, chat) {
-    // Parse username from command
-    const match = msg.body.match(/!kick\s+"([^"]+)"/);
-    if (!match) {
-        // Silently ignore invalid format
+    // Parse username or number from command - support both quoted and unquoted names
+    let targetName;
+    let match = msg.body.match(/!kick\s+"([^"]+)"/);
+    if (match) {
+        targetName = match[1];
+    } else {
+        match = msg.body.match(/!kick\s+(.+)/);
+        if (match) {
+            targetName = match[1].trim();
+        }
+    }
+    if (!targetName) {
+        console.log(`[Admin Utils] No target name found in kick command: ${msg.body}`);
         return true;
     }
-    
-    const targetName = match[1].toLowerCase();
+    console.log(`[Admin Utils] Attempting to kick user: "${targetName}"`);
     const participants = chat.participants || [];
-    
-    // Find user by name
-    const targetParticipant = participants.find(p => {
-        const contact = p.id._serialized;
-        // Try to match by notify name or contact name
-        return (p.notify && p.notify.toLowerCase().includes(targetName)) ||
-               contact.toLowerCase().includes(targetName);
+    console.log(`[Admin Utils] Group has ${participants.length} participants`);
+
+    // If the target looks like a number (e.g. 923001234567), try to match by number
+    const numberMatch = targetName.match(/\d{10,}/);
+    if (numberMatch) {
+        const number = numberMatch[0];
+        const exactId = number + '@c.us';
+        const targetParticipant = participants.find(p => p.id._serialized === exactId);
+        if (targetParticipant) {
+            if (targetParticipant.isAdmin || targetParticipant.isSuperAdmin) {
+                console.log(`[Admin Utils] Cannot kick admin user: ${targetParticipant.notify}`);
+                return true;
+            }
+            try {
+                console.log(`[Admin Utils] Attempting to kick user ${targetParticipant.id._serialized}`);
+                await chat.removeParticipants([targetParticipant.id._serialized]);
+                console.log(`[Admin Utils] Successfully kicked user ${targetParticipant.id._serialized}`);
+                return true;
+            } catch (error) {
+                console.error(`[Admin Utils] Failed to kick user ${targetParticipant.id._serialized}:`, error.message);
+                return true;
+            }
+        } else {
+            console.log(`[Admin Utils] No participant found with number: ${number}`);
+            return true;
+        }
+    }
+
+    // Otherwise, match by name (notify/display name)
+    const targetNameLower = targetName.toLowerCase();
+    const matches = participants.filter(p => {
+        const notifyName = (p.notify || '').toLowerCase();
+        return notifyName.includes(targetNameLower);
     });
-    
-    // Early exits for invalid cases
-    if (!targetParticipant) {
-        // Silently ignore if user not found
+    if (matches.length === 0) {
+        console.log(`[Admin Utils] No participant found with name: ${targetName}`);
         return true;
     }
-    
+    if (matches.length > 1) {
+        let names = matches.map(p => `${p.notify} (${p.id._serialized})`).join(', ');
+        await chat.sendMessage(`Multiple users match "${targetName}":\n${names}\nPlease use the number to kick (e.g. !kick 923001234567)`);
+        return true;
+    }
+    const targetParticipant = matches[0];
     if (targetParticipant.isAdmin || targetParticipant.isSuperAdmin) {
-        // Silently ignore attempt to kick admin
+        console.log(`[Admin Utils] Cannot kick admin user: ${targetParticipant.notify}`);
         return true;
     }
-    
-    // Remove the participant
-    await chat.removeParticipants([targetParticipant.id._serialized]);
-    console.log(`[Admin Utils] User ${targetParticipant.id._serialized} kicked by admin`);
-    return true;
+    try {
+        console.log(`[Admin Utils] Attempting to kick user ${targetParticipant.id._serialized}`);
+        await chat.removeParticipants([targetParticipant.id._serialized]);
+        console.log(`[Admin Utils] Successfully kicked user ${targetParticipant.id._serialized}`);
+        return true;
+    } catch (error) {
+        console.error(`[Admin Utils] Failed to kick user ${targetParticipant.id._serialized}:`, error.message);
+        return true;
+    }
 }
 
 module.exports = {

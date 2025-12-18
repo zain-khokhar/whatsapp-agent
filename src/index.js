@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const client = require('./config/whatsapp');
 const { handleMessage: handleFyp } = require('./handlers/fypHandler');
-const { handleMessage: handlePdfs, initAutoSend } = require('./handlers/pdfsHandler');
+const { handleMessage: handlePdfs } = require('./handlers/pdfsHandler');
 
 console.log('🚀 WhatsApp Agent starting...');
 console.log('📍 Environment:', process.env.NODE_ENV || 'development');
@@ -39,13 +39,15 @@ app.listen(PORT, () => {
 // Register message handler with error handling
 client.on('message', async (msg) => {
     try {
-        // First try PDF handler
-        const handledByPdf = await handlePdfs(msg);
-        
-        // If PDF handler didn't handle it, try FYP handler
-        if (!handledByPdf) {
-            await handleFyp(msg);
+        // Check if message contains 'zeno' - if so, handle with AI only
+        if (msg.body && msg.body.toLowerCase().includes('zeno')) {
+            await handleFyp(msg, client);
+            return; // Skip PDF handler for AI requests
         }
+        
+        // Otherwise, try PDF handler
+        await handlePdfs(msg);
+        
     } catch (error) {
         console.error('❌ Error handling message:', error.message);
         console.error('Stack:', error.stack);
@@ -55,17 +57,6 @@ client.on('message', async (msg) => {
 // Update ready status
 client.on('ready', () => {
     isClientReady = true;
-    // Start the scheduler that will automatically send handouts based on persisted history
-    try {
-        const enableAutoSend = process.env.ENABLE_AUTO_SEND !== 'false';
-        if (enableAutoSend) {
-            initAutoSend(client, { intervalMs: (process.env.AUTO_SEND_INTERVAL_MS ? parseInt(process.env.AUTO_SEND_INTERVAL_MS, 10) : 60 * 1000) }); // default 60s
-        } else {
-            console.log('ℹ️  Auto-send scheduler disabled (ENABLE_AUTO_SEND=false)');
-        }
-    } catch (err) {
-        console.error('❌ Failed to initialize auto-send scheduler:', err && err.message);
-    }
 });
 
 client.on('disconnected', () => {

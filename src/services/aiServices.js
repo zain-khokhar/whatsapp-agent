@@ -1,3 +1,14 @@
+/**
+ * ⚠️ DEPRECATED - This file is no longer used
+ * 
+ * This Gemini API service has been replaced by WhatsApp-based AI (Copilot)
+ * See: src/services/whatsappAI.js
+ * 
+ * Reason: Cost reduction - Gemini API is expensive
+ * Migration Date: 2025-11-27
+ * 
+ * This file is kept for reference only.
+ */
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
